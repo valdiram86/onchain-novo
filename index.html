@@ -1,13 +1,90 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>On-Chain SetValues</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+      margin: 20px;
+    }
+    h1 {
+      color: #00ffcc;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1em;
+    }
+    .verde { background-color: #00ff00 !important; }
+    .amarelo { background-color: #ffff00 !important; }
+    .vermelho { background-color: #ff0000 !important; }
+    table.dataTable tbody td {
+      color: #000;
+    }
+  </style>
 </head>
 <body>
   <h1>Bem-vindo ao On-Chain SetValues</h1>
-  <p>Radar inteligente de pontuação para o universo cripto.</p>
+  <div id="login">
+    <p>Digite seu e-mail autorizado:</p>
+    <input type="email" id="email" placeholder="Seu e-mail"/>
+    <button onclick="verificarEmail()">Entrar</button>
+    <p id="erro" style="color: red;"></p>
+  </div>
+
+  <div id="painel" style="display:none;">
+    <table id="tabela" class="display" style="width:100%"></table>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script>
+    const urlBase = "https://script.google.com/macros/s/AKfycbw2cKrPFZA695XtufzOF6wIECGOO33ZgM5sIvRoE2VI--2dKmvhaJKj5ZJbXHgdel-MmA/exec";
+
+    async function verificarEmail() {
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const resposta = await fetch(urlBase);
+      const dados = await resposta.json();
+      const emailsAutorizados = ['valdiram300@gmail.com', 'onchainsetvalues@gmail.com', 'mmmbsc2022@gmail.com']; // pode ser dinâmico depois
+
+      if (!emailsAutorizados.includes(email)) {
+        document.getElementById("erro").innerText = "E-mail não autorizado.";
+        return;
+      }
+
+      document.getElementById("login").style.display = "none";
+      document.getElementById("painel").style.display = "block";
+      montarTabela(dados);
+    }
+
+    function montarTabela(dados) {
+      const colunas = Object.keys(dados[0]);
+      const colunasFiltradas = colunas.filter(c => c !== "Volume" && c !== "Market Cap");
+
+      const dadosFiltrados = dados.map(linha => colunasFiltradas.map(c => linha[c]));
+
+      $('#tabela').DataTable({
+        data: dadosFiltrados,
+        columns: colunasFiltradas.map(c => ({ title: c })),
+        pageLength: 25,
+        createdRow: function(row, data, index) {
+          const score = parseFloat(data[10 - 2]); // Ajusta se mudar colunas
+          if (score >= 500) $(row).addClass('verde');
+          else if (score >= 300) $(row).addClass('amarelo');
+          else $(row).addClass('vermelho');
+        },
+        language: {
+          url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json"
+        }
+      });
+    }
+  </script>
 </body>
 </html>
-
 
