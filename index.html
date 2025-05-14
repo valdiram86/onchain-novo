@@ -15,10 +15,10 @@
       padding: 0;
     }
     header {
-      background: #e8f5e9;
+      background: #000;
       padding: 20px;
       text-align: center;
-      color: #1b5e20;
+      color: #0f0;
       font-size: 14px;
       line-height: 1.5;
     }
@@ -28,24 +28,23 @@
       text-align: center;
       padding: 10px;
       font-size: 13px;
-      border-top: 1px solid #ccc;
     }
     #login {
       text-align: center;
       padding: 30px;
     }
+    #tabela {
+      width: 100%;
+      margin: 20px auto;
+      display: none;
+    }
     input, button {
       padding: 10px;
       font-size: 16px;
     }
-    #tabela {
-      width: 95%;
-      margin: 20px auto;
-      display: none;
-    }
     .verde { background-color: #00ff00 !important; }
     .amarelo { background-color: #ffff00 !important; }
-    .marrom { background-color: #996633 !important; }
+    .vermelho { background-color: #ff4c4c !important; }
   </style>
 </head>
 <body>
@@ -53,8 +52,8 @@
   <header>
     <strong>Entre 1.357 criptos, 90% são ruído.</strong><br />
     O <strong>On-Chain SetValues</strong> remove o ruído e te mostra onde focar.<br /><br />
-    Solicite seu acesso grátis por 24h: <strong>onchainsetvalues@gmail.com</strong><br />
-    Após 24h: R$55 via PIX ou 10 USDT BEP20 – Chave: <strong>0xbd25d74d441e1b265812814a3f1b791769b6ca44</strong>
+    Solicite acesso grátis por 24h: <strong>onchainsetvalues@gmail.com</strong><br />
+    Após 24h: R$55 via PIX ou 10 USDT (BEP20): <strong>0xbd25d74d441e1b265812814a3f1b791769b6ca44</strong>
   </header>
 
   <div id="login">
@@ -67,7 +66,7 @@
   <table id="tabela" class="display nowrap"></table>
 
   <footer>
-    Isso aqui não é bola de cristal. É uma bússola em meio ao garimpo.  
+    Isso aqui não é uma bola de cristal. É uma bússola em meio ao garimpo.
     Aumente suas chances de encontrar a próxima gema.
   </footer>
 
@@ -110,20 +109,21 @@
             });
           });
 
-          const thead = '<thead><tr>' + colunasFiltradas.map(c => `<th style="padding:4px">${c}</th>`).join('') + '</tr></thead>';
+          const thead = '<thead><tr>' + colunasFiltradas.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
           document.getElementById("tabela").innerHTML = thead;
 
           $('#tabela').DataTable({
             data: dadosFiltrados,
             columns: colunasFiltradas.map(c => ({ title: c })),
-            scrollY: '700px',
-            scrollCollapse: true,
+            scrollX: true,
             paging: false,
             createdRow: function(row, data) {
               const score = parseFloat(data[8]);
-              if (score >= 500) $(row).addClass('verde');
-              else if (score >= 300) $(row).addClass('amarelo');
-              else $(row).addClass('marrom');
+              if (!isNaN(score)) {
+                if (score >= 500) $(row).addClass('verde');
+                else if (score >= 300) $(row).addClass('amarelo');
+                else $(row).addClass('vermelho');
+              }
             },
             language: {
               url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json"
@@ -136,4 +136,9 @@
     }
   </script>
 </body>
-</html>      
+</html>
+      
+
+  
+           
+            
