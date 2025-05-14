@@ -97,7 +97,8 @@
             scrollCollapse: true,
             paging: false,
             createdRow: function(row, data) {
-              const score = parseFloat(data[8]); // baseado na posição do Score
+              const colIndex = colunasFiltradas.indexOf("Pontuação On-Chain Atual");
+const score = parseFloat(data[colIndex]);
               if (score >= 500) $(row).addClass('verde');
               else if (score >= 300) $(row).addClass('amarelo');
               else $(row).addClass('vermelho');
