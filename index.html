@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
@@ -7,15 +7,47 @@
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
   <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css" />
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #eee; margin: 0; padding: 0; }
-    header { background: #000; padding: 20px; text-align: center; color: #0f0; font-size: 16px; line-height: 1.5; }
-    footer { background: #000; color: #0ff; text-align: center; padding: 10px; font-size: 14px; position: sticky; bottom: 0; }
-    #login { text-align: center; padding: 30px; }
-    #tabela { width: 100%; margin: 20px auto; display: none; }
-    input, button { padding: 10px; font-size: 16px; }
-    .verde { background-color: #00ff00 !important; }
-    .amarelo { background-color: #ffff00 !important; }
-    .vermelho { background-color: #ff4c4c !important; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+      color: #111;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #e0ffe0;
+      color: #000;
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    footer {
+      background: #eee;
+      color: #111;
+      text-align: center;
+      padding: 10px;
+      font-size: 13px;
+    }
+    #login {
+      text-align: center;
+      padding: 30px;
+    }
+    #tabela {
+      width: 98%;
+      margin: 10px auto;
+      font-size: 13px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    .verde { background-color: #00FF00 !important; }
+    .amarelo { background-color: #FFFF00 !important; }
+    .marrom { background-color: #A0522D !important; color: #fff !important; }
+    table.dataTable tbody td {
+      padding: 4px;
+    }
   </style>
 </head>
 <body>
@@ -23,9 +55,8 @@
   <header>
     <strong>Entre 1.357 criptos, 90% são ruído.</strong><br />
     O <strong>On-Chain SetValues</strong> remove o ruído e te mostra onde focar.<br /><br />
-    Solicite seu acesso grátis por 24h enviando um e-mail para: <strong>onchainsetvalues@gmail.com</strong><br />
-    Após 24h: R$55 via PIX (Chave: <strong>onchainsetvalues@gmail.com</strong>) ou<br />
-    10 USDT (BEP20): <strong>0xbd25d74d441e1b265812814a3f1b791769b6ca44</strong>
+    Acesso grátis por 24h: <strong>onchainsetvalues@gmail.com</strong><br />
+    Após 24h: R$55 ou 10 USDT (BEP20): <strong>0xbd25d74d441e1b265812814a3f1b791769b6ca44</strong>
   </header>
 
   <div id="login">
@@ -35,7 +66,7 @@
     <p id="erro" style="color: red;"></p>
   </div>
 
-  <table id="tabela" class="display nowrap"></table>
+  <table id="tabela" class="display nowrap" style="display: none;"></table>
 
   <footer>
     Isso aqui não é uma bola de cristal. É uma bússola em meio ao garimpo.
@@ -52,7 +83,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
   <script>
-    const urlBase = "https://script.google.com/macros/s/AKfycbxjNByOvrcHz5B1OX_ogS3Z9_bR6gB_QvsfLEsLo6LytKA_emFgCluGZIZv2k2PZOWpSw/exec";
+    const urlBase = "https://script.google.com/macros/s/AKfycbw2cKrPFZA695XtufzOF6wIECGOO33ZgM5sIvRoE2VI--2dKmvhaJKj5ZJbXHgdel-MmA/exec";
 
     function verificarEmail() {
       const email = document.getElementById("email").value.trim().toLowerCase();
@@ -97,11 +128,10 @@
             scrollCollapse: true,
             paging: false,
             createdRow: function(row, data) {
-              const colIndex = colunasFiltradas.indexOf("Pontuação On-Chain Atual");
-const score = parseFloat(data[colIndex]);
+              const score = parseFloat(data[6]); // Ajustar para coluna de pontuação
               if (score >= 500) $(row).addClass('verde');
               else if (score >= 300) $(row).addClass('amarelo');
-              else $(row).addClass('vermelho');
+              else $(row).addClass('marrom');
             },
             language: {
               url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json"
@@ -115,3 +145,4 @@ const score = parseFloat(data[colIndex]);
   </script>
 </body>
 </html>
+             
