@@ -12,7 +12,7 @@
     footer { background: #000; color: #0ff; text-align: center; padding: 10px; font-size: 14px; position: sticky; bottom: 0; }
     #login { text-align: center; padding: 30px; }
     #tabela { width: 100%; margin: 20px auto; display: none; }
-    input, button { padding: 10px; font-size: 16px; }
+    input, button { padding: 10px; font-size: 16px; } /* Fonte mínima p/ evitar zoom no celular */
     .azul { background-color: #3399ff !important; }
     .verde { background-color: #00ff00 !important; }
     .amarelo { background-color: #ffff00 !important; }
@@ -25,7 +25,8 @@
     <strong>Entre 1.357 criptos, 90% são ruído.</strong><br />
     O <strong>On-Chain SetValues</strong> remove o ruído e te mostra onde focar.<br /><br />
     Acesso gratuito 24h: <strong>onchainsetvalues@gmail.com</strong><br />
-    Após 24h: R$55 via chave PIX e-mail onchainsetvalues@gmail.com ou 10 USDT (BEP20) 0xbd25d74d441e1b265812814a3f1b791769b6ca44
+    Após 24h: R$55 via PIX (Chave: onchainsetvalues@gmail.com) ou<br />
+    10 USDT (BEP20): <strong>0xbd25d74d441e1b265812814a3f1b791769b6ca44</strong>
   </header>
 
   <div id="login">
@@ -75,9 +76,15 @@
           const remover = ["Volume", "Market Cap"];
           const colunasFiltradas = colunas.filter(c => !remover.includes(c));
           const dadosFiltrados = dados.map(linha => {
-            return colunasFiltradas.map(c => c === "Link"
-              ? `<a href="${linha[c]}" target="_blank">${linha[c]}</a>`
-              : linha[c]);
+            const nova = [];
+            colunasFiltradas.forEach(c => {
+              if (c === "Link") {
+                nova.push(`<a href="${linha[c]}" target="_blank">${linha[c]}</a>`);
+              } else {
+                nova.push(linha[c]);
+              }
+            });
+            return nova;
           });
 
           const thead = '<thead><tr>' + colunasFiltradas.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
@@ -86,12 +93,11 @@
           $('#tabela').DataTable({
             data: dadosFiltrados,
             columns: colunasFiltradas.map(c => ({ title: c })),
-            scrollY: '600px',
+            scrollY: '700px',
             scrollCollapse: true,
             paging: false,
             createdRow: function(row, data) {
-              const idx = colunasFiltradas.indexOf("Pontuação Balanceada");
-              const score = parseFloat(data[idx]);
+              const score = parseFloat(data[10]); // "Pontuação Balanceada"
               if (score >= 600) $(row).addClass('azul');
               else if (score >= 500) $(row).addClass('verde');
               else if (score >= 300) $(row).addClass('amarelo');
@@ -103,7 +109,7 @@
           });
         })
         .catch(() => {
-          document.getElementById("erro").innerText = "Erro ao validar e-mail.";
+          document.getElementById("erro").innerText = "Erro ao carregar dados.";
         });
     }
   </script>
