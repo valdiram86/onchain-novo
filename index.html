@@ -25,9 +25,9 @@
     <strong>Entre 1.357 criptos, 90% são ruído.</strong><br />
     O <strong>On-Chain SetValues</strong> remove o ruído e te mostra onde focar.<br /><br />
     Acesso gratuito 24h: <strong>onchainsetvalues@gmail.com</strong><br />
-    Após 24h: R$55 via PIX no e-mail onchainsetvalues@gmail.com ou 10 USDT (BEP20) 0xbd25d74d441e1b265812814a3f1b791769b6ca44 
+    Após 24h: R$55 via PIX ou 10 USDT (BEP20)
   </header>
-  
+
   <div id="login">
     <p>Digite seu e-mail autorizado:</p>
     <input type="email" id="email" placeholder="seu@email.com" />
@@ -97,7 +97,8 @@
             scrollCollapse: true,
             paging: false,
             createdRow: function(row, data) {
-              const score = parseFloat(data[10]); // "Pontuação Balanceada"
+              const idx = colunasFiltradas.indexOf("Pontuação Balanceada");
+              const score = parseFloat(data[idx]);
               if (score >= 600) $(row).addClass('azul');
               else if (score >= 500) $(row).addClass('verde');
               else if (score >= 300) $(row).addClass('amarelo');
