@@ -13,10 +13,10 @@
     #login { text-align: center; padding: 30px; }
     #tabela { width: 100%; margin: 20px auto; display: none; }
     input, button { padding: 10px; font-size: 16px; }
+    .azul { background-color: #3399ff !important; }
     .verde { background-color: #00ff00 !important; }
     .amarelo { background-color: #ffff00 !important; }
     .rosa { background-color: #ff00ff !important; }
-    .azul { background-color: #3399ff !important; }
   </style>
 </head>
 <body>
@@ -25,7 +25,8 @@
     <strong>Entre 1.357 criptos, 90% são ruído.</strong><br />
     O <strong>On-Chain SetValues</strong> remove o ruído e te mostra onde focar.<br /><br />
     Acesso gratuito 24h: <strong>onchainsetvalues@gmail.com</strong><br />
-    Após 24h: R$55 via PIX ou 10 USDT (BEP20)
+    Após 24h: R$55 via PIX na chave e-mail onchainsetvalues@gmail.com ou 10 USDT (BEP20) 0xbd25d74d441e1b265812814a3f1b791769b6ca44
+
   </header>
 
   <div id="login">
@@ -38,7 +39,7 @@
   <table id="tabela" class="display nowrap"></table>
 
   <footer>
-    Isso não é uma bola de cristal. É uma bússola em meio ao garimpo.
+    Isso aqui não é uma bola de cristal. É uma bússola em meio ao garimpo.
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -60,8 +61,8 @@
         return;
       }
 
-      fetch(urlBase + "?email=" + encodeURIComponent(email))
-        .then(res => res.json())
+      fetch(`${urlBase}?email=${encodeURIComponent(email)}`)
+        .then(response => response.json())
         .then(dados => {
           if (dados.erro) {
             document.getElementById("erro").innerText = "Acesso negado.";
@@ -76,15 +77,7 @@
           const colunasFiltradas = colunas.filter(c => !remover.includes(c));
 
           const dadosFiltrados = dados.map(linha => {
-            const nova = [];
-            colunasFiltradas.forEach(c => {
-              if (c === "Link") {
-                nova.push(`<a href="${linha[c]}" target="_blank">${linha[c]}</a>`);
-              } else {
-                nova.push(linha[c]);
-              }
-            });
-            return nova;
+            return colunasFiltradas.map(c => c === "Link" ? `<a href="${linha[c]}" target="_blank">${linha[c]}</a>` : linha[c]);
           });
 
           const thead = '<thead><tr>' + colunasFiltradas.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
@@ -97,8 +90,7 @@
             scrollCollapse: true,
             paging: false,
             createdRow: function(row, data) {
-              const idx = colunasFiltradas.indexOf("Pontuação Balanceada");
-              const score = parseFloat(data[idx]);
+              const score = parseFloat(data[10]); // Pontuação Balanceada
               if (score >= 600) $(row).addClass('azul');
               else if (score >= 500) $(row).addClass('verde');
               else if (score >= 300) $(row).addClass('amarelo');
@@ -110,7 +102,7 @@
           });
         })
         .catch(() => {
-          document.getElementById("erro").innerText = "Erro ao carregar dados.";
+          document.getElementById("erro").innerText = "Erro ao validar e-mail.";
         });
     }
   </script>
