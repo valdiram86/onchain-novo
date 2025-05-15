@@ -13,6 +13,10 @@
     #login { text-align: center; padding: 30px; }
     #tabela { width: 100%; margin: 20px auto; display: none; }
     input, button { padding: 10px; font-size: 16px; }
+    .verde { background-color: #00ff00 !important; }
+    .amarelo { background-color: #ffff00 !important; }
+    .rosa { background-color: #ff00ff !important; }
+    .azul { background-color: #3399ff !important; }
   </style>
 </head>
 <body>
@@ -20,10 +24,10 @@
   <header>
     <strong>Entre 1.357 criptos, 90% são ruído.</strong><br />
     O <strong>On-Chain SetValues</strong> remove o ruído e te mostra onde focar.<br /><br />
-    Acesso grátis por 24h: <strong>onchainsetvalues@gmail.com</strong><br />
-    Após 24h: R$55 via PIX no E-mail onchainsetvalues@gmail.com ou 10 USDT (BEP20)
+    Acesso gratuito 24h: <strong>onchainsetvalues@gmail.com</strong><br />
+    Após 24h: R$55 via PIX ou 10 USDT (BEP20) 0xbd25d74d441e1b265812814a3f1b791769b6ca44 
   </header>
-
+  
   <div id="login">
     <p>Digite seu e-mail autorizado:</p>
     <input type="email" id="email" placeholder="seu@email.com" />
@@ -70,6 +74,7 @@
           const colunas = Object.keys(dados[0]);
           const remover = ["Volume", "Market Cap"];
           const colunasFiltradas = colunas.filter(c => !remover.includes(c));
+
           const dadosFiltrados = dados.map(linha => {
             const nova = [];
             colunasFiltradas.forEach(c => {
@@ -88,20 +93,15 @@
           $('#tabela').DataTable({
             data: dadosFiltrados,
             columns: colunasFiltradas.map(c => ({ title: c })),
-            scrollY: '700px',
+            scrollY: '600px',
             scrollCollapse: true,
             paging: false,
             createdRow: function(row, data) {
-              const score = parseFloat(data[8]);
-              if (score >= 600) {
-                $(row).css('background-color', '#3399ff'); // Azul
-              } else if (score >= 500) {
-                $(row).css('background-color', '#00ff00'); // Verde
-              } else if (score >= 300) {
-                $(row).css('background-color', '#ffff00'); // Amarelo
-              } else if (score >= 250) {
-                $(row).css('background-color', '#ff00ff'); // Rosa Neon
-              }
+              const score = parseFloat(data[10]); // "Pontuação Balanceada"
+              if (score >= 600) $(row).addClass('azul');
+              else if (score >= 500) $(row).addClass('verde');
+              else if (score >= 300) $(row).addClass('amarelo');
+              else if (score >= 250) $(row).addClass('rosa');
             },
             language: {
               url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json"
