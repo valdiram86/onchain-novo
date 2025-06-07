@@ -1,139 +1,162 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Painel RSI – WebApp Oficial</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
+      background: #f5f5f5;
       padding: 20px;
-    }
-    input, button, select {
-      padding: 10px;
-      font-size: 16px;
-    }
-    input[type="email"], input[type="text"] {
-      width: 320px;
-    }
-    button {
-      background-color: #00b894;
-      color: white;
-      border: none;
-      margin-left: 5px;
-      cursor: pointer;
-    }
-    #mensagem, #status {
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    #painel {
-      display: none;
-      margin-top: 20px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-      margin-top: 10px;
-    }
-    th, td {
-      border: 1px solid #999;
-      padding: 6px;
       text-align: center;
     }
+    input, select, button {
+      font-size: 16px;
+      padding: 8px;
+      margin: 5px;
+    }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 95%;
+      background: #fff;
+    }
+    th, td {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+    }
     th {
-      background-color: #ddd;
+      background: #eee;
       cursor: pointer;
     }
+    .success { color: green; }
+    .error { color: red; }
+    .highlight { background-color: #e0ffe0; }
+    .green { background-color: #d6ffd6; }
+    .strong-green { background-color: #90ee90; }
   </style>
 </head>
 <body>
+
   <h2>Painel RSI – WebApp Oficial</h2>
 
   <p>Digite seu e-mail autorizado:</p>
-  <input type="email" id="email" placeholder="seu@email.com" value="valdiram.lima.2013@gmail.com" />
-  <button onclick="verificar()">Entrar</button>
-  <p id="mensagem"></p>
+  <input type="email" id="email" placeholder="seu@email.com" size="35">
+  <button onclick="verificarEmail()">Entrar</button>
 
-  <div id="painel">
-    <label>Selecionar aba:</label>
-    <select id="seletorAba">
-      <option value="OndaDeAlta_5">OndaDeAlta_5</option>
-      <option value="OndaDeAlta_7_5">OndaDeAlta_7_5</option>
-      <option value="OndaDeAlta_10" selected>OndaDeAlta_10</option>
+  <p id="msg" class="error"></p>
+
+  <div id="painel" style="display:none;">
+    <p class="success">✅ Acesso autorizado.</p>
+
+    <label>Selecionar aba: </label>
+    <select id="aba">
+      <option>OndaDeAlta_5</option>
+      <option>OndaDeAlta_7_5</option>
+      <option>OndaDeAlta_10</option>
     </select>
-    <button onclick="carregarTabela()">Testar Aba Manualmente</button>
+    <button onclick="carregarDados()">Testar Aba Manualmente</button>
+    <button onclick="exportarCSV()">Exportar CSV</button>
+    <p id="contador"></p>
 
-    <p id="status"></p>
-    <table id="tabela"></table>
+    <table>
+      <thead id="cabecalho"></thead>
+      <tbody id="dados"></tbody>
+    </table>
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/SEU_URL_DO_SCRIPT/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxRwe1RRn0ZW7wyyhNcurCP6DUVePB2599ms5VieNSfgNvTD06abWqhH_cX_eA_lkK_Qg/exec";
+    let dadosOriginais = [];
 
-    let dadosAtuais = [];
-
-    async function verificar() {
+    function verificarEmail() {
       const email = document.getElementById("email").value.trim();
-      document.getElementById("mensagem").innerText = "🔍 Verificando...";
+      if (!email) return alert("Informe o e-mail.");
 
-      try {
-        const resposta = await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(email)}`);
-        const texto = await resposta.text();
-
-        document.getElementById("mensagem").innerText = texto;
-
-        if (texto.includes("✅")) {
-          document.getElementById("painel").style.display = "block";
-          carregarTabela();
-        }
-      } catch (erro) {
-        document.getElementById("mensagem").innerText = "❌ Erro de conexão.";
-      }
+      fetch(`${SCRIPT_URL}?email=${email}`)
+        .then(r => r.text())
+        .then(res => {
+          const msg = document.getElementById("msg");
+          if (res.includes("✅")) {
+            msg.innerHTML = "✅ Acesso autorizado.";
+            msg.className = "success";
+            document.getElementById("painel").style.display = "block";
+            carregarDados(); // Carrega ao autorizar
+          } else {
+            msg.innerHTML = res;
+            msg.className = "error";
+          }
+        })
+        .catch(() => {
+          document.getElementById("msg").innerHTML = "Erro de conexão.";
+        });
     }
 
-    async function carregarTabela() {
-      const aba = document.getElementById("seletorAba").value;
-      document.getElementById("status").innerText = `🔄 Carregando aba ${aba}...`;
-
-      try {
-        const resposta = await fetch(`${SCRIPT_URL}?aba=${encodeURIComponent(aba)}`);
-        const dados = await resposta.json();
-
-        if (!Array.isArray(dados) || dados.length === 0) {
-          document.getElementById("status").innerText = "❌ Nenhum dado encontrado.";
-          return;
-        }
-
-        dadosAtuais = dados;
-        montarTabela(dados);
-        document.getElementById("status").innerText = `✅ ${dados.length} linhas carregadas da aba ${aba}.`;
-      } catch (erro) {
-        document.getElementById("status").innerText = "❌ Erro ao carregar dados.";
-      }
+    function carregarDados() {
+      const aba = document.getElementById("aba").value;
+      fetch(`${SCRIPT_URL}?aba=${aba}`)
+        .then(r => r.json())
+        .then(dados => {
+          dadosOriginais = dados;
+          montarTabela(dados);
+          document.getElementById("contador").innerHTML = `✅ ${dados.length} linhas carregadas da aba ${aba}.`;
+        })
+        .catch(() => {
+          document.getElementById("contador").innerHTML = "❌ Erro ao carregar dados.";
+        });
     }
 
     function montarTabela(dados) {
-      const tabela = document.getElementById("tabela");
-      const headers = dados[0];
-      let html = "<tr>";
+      const cab = document.getElementById("cabecalho");
+      const corpo = document.getElementById("dados");
+      const colunas = ["Ranking", "Símbolo", "Link", "RSI (1D)", "Variação 1D (%)", "Volume (24h)", "Market Cap"];
 
-      headers.forEach(h => html += `<th>${h}</th>`);
-      html += "</tr>";
+      cab.innerHTML = "<tr>" + colunas.map((c, i) => `<th onclick="ordenarPor(${i})">${c}</th>`).join("") + "</tr>";
+      corpo.innerHTML = "";
 
-      for (let i = 1; i < dados.length; i++) {
-        html += "<tr>" + dados[i].map((valor, j) => {
-          if (j === 2 && typeof valor === "string" && valor.includes("http")) {
-            return `<td><a href="${valor}" target="_blank">🔗</a></td>`;
+      dados.forEach(l => {
+        const tr = document.createElement("tr");
+        colunas.forEach((_, i) => {
+          const td = document.createElement("td");
+          let v = l[i];
+          if (i === 2) {
+            td.innerHTML = `<a href="${v}" target="_blank">🔗</a>`;
+          } else {
+            td.textContent = v;
           }
-          return `<td>${valor}</td>`;
-        }).join("") + "</tr>";
-      }
 
-      tabela.innerHTML = html;
+          if (i === 4 && !isNaN(v)) {
+            if (v >= 30) td.className = "strong-green";
+            else if (v >= 10) td.className = "green";
+          }
+
+          tr.appendChild(td);
+        });
+        corpo.appendChild(tr);
+      });
+    }
+
+    function ordenarPor(indice) {
+      const ordenado = [...dadosOriginais].sort((a, b) => {
+        const valA = a[indice];
+        const valB = b[indice];
+        return (typeof valA === "number" && typeof valB === "number") 
+          ? valB - valA : String(valA).localeCompare(String(valB));
+      });
+      montarTabela(ordenado);
+    }
+
+    function exportarCSV() {
+      if (!dadosOriginais.length) return alert("Nada para exportar.");
+      const linhas = dadosOriginais.map(l => l.join(","));
+      const csv = linhas.join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "dados.csv";
+      link.click();
     }
   </script>
+
 </body>
 </html>
