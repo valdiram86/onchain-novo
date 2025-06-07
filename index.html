@@ -1,116 +1,138 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>On-Chain SetValues</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
-  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel RSI – WebApp Oficial</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #eee; margin: 0; padding: 0; }
-    header { background: #000; padding: 20px; text-align: center; color: #0f0; font-size: 16px; line-height: 1.5; }
-    footer { background: #000; color: #0ff; text-align: center; padding: 10px; font-size: 14px; position: sticky; bottom: 0; }
-    #login { text-align: center; padding: 30px; }
-    #tabela { width: 100%; margin: 20px auto; display: none; }
-    input, button { padding: 10px; font-size: 16px; } /* Fonte mínima p/ evitar zoom no celular */
-    .azul { background-color: #3399ff !important; }
-    .verde { background-color: #00ff00 !important; }
-    .amarelo { background-color: #ffff00 !important; }
-    .rosa { background-color: #ff00ff !important; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+    input, button, select {
+      padding: 10px;
+      font-size: 16px;
+    }
+    input[type="email"], input[type="text"] {
+      width: 320px;
+    }
+    button {
+      background-color: #00b894;
+      color: white;
+      border: none;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    #mensagem, #status {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    #painel {
+      display: none;
+      margin-top: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 6px;
+      text-align: center;
+    }
+    th {
+      background-color: #ddd;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+  <h2>Painel RSI – WebApp Oficial</h2>
 
-  <header>
-    <strong>Entre 1.357 criptos, 90% são ruído.</strong><br />
-    O <strong>On-Chain SetValues</strong> remove o ruído e te mostra onde focar.<br /><br />
-    Acesso gratuito 24h: <strong>onchainsetvalues@gmail.com</strong><br />
-    Após 24h: R$55 via PIX (Chave: onchainsetvalues@gmail.com) ou<br />
-    10 USDT (BEP20): <strong>0xbd25d74d441e1b265812814a3f1b791769b6ca45</strong>
-  </header>
+  <p>Digite seu e-mail autorizado:</p>
+  <input type="email" id="email" placeholder="seu@email.com" value="valdiram.lima.2013@gmail.com" />
+  <button onclick="verificar()">Entrar</button>
+  <p id="mensagem"></p>
 
-  <div id="login">
-    <p>Digite seu e-mail autorizado:</p>
-    <input type="email" id="email" placeholder="seu@email.com" />
-    <button onclick="verificarEmail()">Entrar</button>
-    <p id="erro" style="color: red;"></p>
+  <div id="painel">
+    <label>Selecionar aba:</label>
+    <select id="seletorAba">
+      <option value="OndaDeAlta_5">OndaDeAlta_5</option>
+      <option value="OndaDeAlta_7_5">OndaDeAlta_7_5</option>
+      <option value="OndaDeAlta_10" selected>OndaDeAlta_10</option>
+    </select>
+    <button onclick="carregarTabela()">Testar Aba Manualmente</button>
+
+    <p id="status"></p>
+    <table id="tabela"></table>
   </div>
 
-  <table id="tabela" class="display nowrap"></table>
-
-  <footer>
-    Isso aqui não é uma bola de cristal. É uma bússola em meio ao garimpo.
-  </footer>
-
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
   <script>
-    const urlBase = "https://script.google.com/macros/s/AKfycbw2cKrPFZA695XtufzOF6wIECGOO33ZgM5sIvRoE2VI--2dKmvhaJKj5ZJbXHgdel-MmA/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/SEU_URL_DO_SCRIPT/exec";
 
-    function verificarEmail() {
-      const email = document.getElementById("email").value.trim().toLowerCase();
-      if (!email.includes("@")) {
-        document.getElementById("erro").innerText = "Digite um e-mail válido.";
-        return;
+    let dadosAtuais = [];
+
+    async function verificar() {
+      const email = document.getElementById("email").value.trim();
+      document.getElementById("mensagem").innerText = "🔍 Verificando...";
+
+      try {
+        const resposta = await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(email)}`);
+        const texto = await resposta.text();
+
+        document.getElementById("mensagem").innerText = texto;
+
+        if (texto.includes("✅")) {
+          document.getElementById("painel").style.display = "block";
+          carregarTabela();
+        }
+      } catch (erro) {
+        document.getElementById("mensagem").innerText = "❌ Erro de conexão.";
+      }
+    }
+
+    async function carregarTabela() {
+      const aba = document.getElementById("seletorAba").value;
+      document.getElementById("status").innerText = `🔄 Carregando aba ${aba}...`;
+
+      try {
+        const resposta = await fetch(`${SCRIPT_URL}?aba=${encodeURIComponent(aba)}`);
+        const dados = await resposta.json();
+
+        if (!Array.isArray(dados) || dados.length === 0) {
+          document.getElementById("status").innerText = "❌ Nenhum dado encontrado.";
+          return;
+        }
+
+        dadosAtuais = dados;
+        montarTabela(dados);
+        document.getElementById("status").innerText = `✅ ${dados.length} linhas carregadas da aba ${aba}.`;
+      } catch (erro) {
+        document.getElementById("status").innerText = "❌ Erro ao carregar dados.";
+      }
+    }
+
+    function montarTabela(dados) {
+      const tabela = document.getElementById("tabela");
+      const headers = dados[0];
+      let html = "<tr>";
+
+      headers.forEach(h => html += `<th>${h}</th>`);
+      html += "</tr>";
+
+      for (let i = 1; i < dados.length; i++) {
+        html += "<tr>" + dados[i].map((valor, j) => {
+          if (j === 2 && typeof valor === "string" && valor.includes("http")) {
+            return `<td><a href="${valor}" target="_blank">🔗</a></td>`;
+          }
+          return `<td>${valor}</td>`;
+        }).join("") + "</tr>";
       }
 
-      fetch(urlBase + "?email=" + encodeURIComponent(email))
-        .then(res => res.json())
-        .then(dados => {
-          if (dados.erro) {
-            document.getElementById("erro").innerText = "Acesso negado.";
-            return;
-          }
-
-          document.getElementById("login").style.display = "none";
-          document.getElementById("tabela").style.display = "table";
-
-          const colunas = Object.keys(dados[0]);
-          const remover = ["Volume", "Market Cap"];
-          const colunasFiltradas = colunas.filter(c => !remover.includes(c));
-          const dadosFiltrados = dados.map(linha => {
-            const nova = [];
-            colunasFiltradas.forEach(c => {
-              if (c === "Link") {
-                nova.push(`<a href="${linha[c]}" target="_blank">${linha[c]}</a>`);
-              } else {
-                nova.push(linha[c]);
-              }
-            });
-            return nova;
-          });
-
-          const thead = '<thead><tr>' + colunasFiltradas.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
-          document.getElementById("tabela").innerHTML = thead;
-
-          $('#tabela').DataTable({
-            data: dadosFiltrados,
-            columns: colunasFiltradas.map(c => ({ title: c })),
-            scrollY: '700px',
-            scrollCollapse: true,
-            paging: false,
-            createdRow: function(row, data) {
-              const score = parseFloat(data[10]); // "Pontuação Balanceada"
-              if (score >= 600) $(row).addClass('azul');
-              else if (score >= 500) $(row).addClass('verde');
-              else if (score >= 300) $(row).addClass('amarelo');
-              else if (score >= 250) $(row).addClass('rosa');
-            },
-            language: {
-              url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json"
-            }
-          });
-        })
-        .catch(() => {
-          document.getElementById("erro").innerText = "Erro ao carregar dados.";
-        });
+      tabela.innerHTML = html;
     }
   </script>
 </body>
