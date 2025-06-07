@@ -1,139 +1,67 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel RSI – WebApp Oficial</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      padding: 20px;
-    }
-    input, button, select {
-      padding: 10px;
-      font-size: 16px;
-    }
-    input[type="email"], input[type="text"] {
-      width: 320px;
-    }
-    button {
-      background-color: #00b894;
-      color: white;
-      border: none;
-      margin-left: 5px;
-      cursor: pointer;
-    }
-    #mensagem, #status {
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    #painel {
-      display: none;
-      margin-top: 20px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-      margin-top: 10px;
-    }
-    th, td {
-      border: 1px solid #999;
-      padding: 6px;
-      text-align: center;
-    }
-    th {
-      background-color: #ddd;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <h2>Painel RSI – WebApp Oficial</h2>
+# 📊 Painel RSI – Criptomoedas em Alta
 
-  <p>Digite seu e-mail autorizado:</p>
-  <input type="email" id="email" placeholder="seu@email.com" value="valdiram.lima.2013@gmail.com" />
-  <button onclick="verificar()">Entrar</button>
-  <p id="mensagem"></p>
+Este painel foi desenvolvido para exibir as criptomoedas com maior variação positiva diária, organizadas por faixas de RSI (Índice de Força Relativa), volume e market cap. O sistema é conectado diretamente a uma planilha Google Sheets atualizada automaticamente via Apps Script.
 
-  <div id="painel">
-    <label>Selecionar aba:</label>
-    <select id="seletorAba">
-      <option value="OndaDeAlta_5">OndaDeAlta_5</option>
-      <option value="OndaDeAlta_7_5">OndaDeAlta_7_5</option>
-      <option value="OndaDeAlta_10" selected>OndaDeAlta_10</option>
-    </select>
-    <button onclick="carregarTabela()">Testar Aba Manualmente</button>
+## 🔗 Acesso ao painel
 
-    <p id="status"></p>
-    <table id="tabela"></table>
-  </div>
+> 🔐 Acesso restrito por e-mail autorizado
 
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/SEU_URL_DO_SCRIPT/exec";
+🌐 Painel online:  
+[https://onchain-novo.vercel.app](https://onchain-novo.vercel.app) *(exemplo de domínio, ajuste conforme a implantação)*
 
-    let dadosAtuais = [];
+---
 
-    async function verificar() {
-      const email = document.getElementById("email").value.trim();
-      document.getElementById("mensagem").innerText = "🔍 Verificando...";
+## ✅ Funcionalidades
 
-      try {
-        const resposta = await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(email)}`);
-        const texto = await resposta.text();
+- Verificação de e-mail autorizando acesso
+- Carregamento de dados por aba (`TopMoedas1D`, `OndaDeAlta_5`, `OndaDeAlta_7_5`, `OndaDeAlta_10`)
+- Exibição dos dados com coloração por variação e RSI
+- Botões:
+  - **Atualizar Dados** (manual)
+  - **Exportar CSV**
+  - **Testar aba manualmente**
+- Campo de filtro por símbolo
+- Tabela responsiva com ordenação por coluna
 
-        document.getElementById("mensagem").innerText = texto;
+---
 
-        if (texto.includes("✅")) {
-          document.getElementById("painel").style.display = "block";
-          carregarTabela();
-        }
-      } catch (erro) {
-        document.getElementById("mensagem").innerText = "❌ Erro de conexão.";
-      }
-    }
+## 📁 Estrutura
 
-    async function carregarTabela() {
-      const aba = document.getElementById("seletorAba").value;
-      document.getElementById("status").innerText = `🔄 Carregando aba ${aba}...`;
+| Coluna             | Descrição                                  |
+|--------------------|---------------------------------------------|
+| `Ranking`          | Posição no ranking do CoinMarketCap         |
+| `Símbolo`          | Código da criptomoeda                       |
+| `Link`             | Acesso direto ao CoinMarketCap              |
+| `RSI (1D)`         | RSI diário (via Twelve Data API)            |
+| `Variação 1D (%)`  | Percentual de valorização em 24 horas       |
+| `Volume (24h)`     | Volume negociado                            |
+| `Market Cap`       | Capitalização de mercado estimada           |
 
-      try {
-        const resposta = await fetch(`${SCRIPT_URL}?aba=${encodeURIComponent(aba)}`);
-        const dados = await resposta.json();
+---
 
-        if (!Array.isArray(dados) || dados.length === 0) {
-          document.getElementById("status").innerText = "❌ Nenhum dado encontrado.";
-          return;
-        }
+## 🛠️ Tecnologias Utilizadas
 
-        dadosAtuais = dados;
-        montarTabela(dados);
-        document.getElementById("status").innerText = `✅ ${dados.length} linhas carregadas da aba ${aba}.`;
-      } catch (erro) {
-        document.getElementById("status").innerText = "❌ Erro ao carregar dados.";
-      }
-    }
+- Google Apps Script
+- Google Sheets
+- HTML + CSS + JavaScript
+- Vercel (hospedagem)
+- CoinMarketCap API
+- Twelve Data API
 
-    function montarTabela(dados) {
-      const tabela = document.getElementById("tabela");
-      const headers = dados[0];
-      let html = "<tr>";
+---
 
-      headers.forEach(h => html += `<th>${h}</th>`);
-      html += "</tr>";
+## 🧪 Como funciona
 
-      for (let i = 1; i < dados.length; i++) {
-        html += "<tr>" + dados[i].map((valor, j) => {
-          if (j === 2 && typeof valor === "string" && valor.includes("http")) {
-            return `<td><a href="${valor}" target="_blank">🔗</a></td>`;
-          }
-          return `<td>${valor}</td>`;
-        }).join("") + "</tr>";
-      }
+1. O script Apps Script coleta e filtra criptomoedas com base em critérios como variação, RSI e market cap.
+2. Os dados são salvos em abas específicas da planilha.
+3. O painel acessa essas abas via endpoint `doGet` autenticado por e-mail.
+4. Os dados são renderizados dinamicamente no navegador.
 
-      tabela.innerHTML = html;
-    }
-  </script>
-</body>
-</html>
+---
+
+## ⚙️ Variáveis de ambiente (se necessário)
+
+Se for usar API ou rotas protegidas:
+
+```env
+NEXT_PUBLIC_API=https://script.google.com/macros/s/AKfycb.../exec
